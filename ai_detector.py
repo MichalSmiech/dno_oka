@@ -16,10 +16,12 @@ class AiDetector:
         self.step = 1
 
     def extract_features(self, image):
+        print('extract_features...')
         features_list = []
 
         rows = range(image.shape[0] // self.step)
         for i in rows:
+            print(f'extract_features {i}/{len(rows)} {i/len(rows)*100}%')
             cols = range(image.shape[1] // self.step)
             for j in cols:
                 # part_img = image[5 * i:5 * (i + 1), 5 * j:5 * (j + 1)].flatten()
@@ -68,6 +70,8 @@ class AiDetector:
         three = ['data/images/03_h.jpg', 'data/manual/03_h.tif']
         four = ['data/images/04_h.jpg', 'data/manual/04_h.tif']
         five = ['data/images/05_h.jpg', 'data/manual/05_h.tif']
+        test1 = ['data/images/02_h_800.jpg', 'data/manual/02_h_800.tif']
+        test2 = ['data/images/02_h_800.jpg', 'data/manual/02_h_800.tif']
 
         x = []
         y = []
@@ -103,12 +107,12 @@ class AiDetector:
 
     def load_classifier(self):
         print('load_classifier...')
-        self.classifier = pickle.load(open(self.classifier_file_path, 'rb'))
+        self.classifier = self.load_object(self.classifier_file_path)
         print('completed')
 
     def save_classifier(self):
         print('save_classifier...')
-        pickle.dump(self.classifier, open(self.classifier_file_path, 'wb'))
+        self.cache_object(self.classifier, self.classifier_file_path)
         print('completed')
 
     def cache_object(self, object, name):
