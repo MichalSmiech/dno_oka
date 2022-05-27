@@ -23,7 +23,7 @@ def ai():
     detector = AiDetector()
 
     detector.load_classifier()
-    detector.predict_image2('02_h_800')
+    detector.predict_image('02_h_800')
     print(start - datetime.now().timestamp())
 
 

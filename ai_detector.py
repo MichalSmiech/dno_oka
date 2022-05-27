@@ -13,18 +13,18 @@ class AiDetector:
         self.classifier = None
         self.image = None
         self.expert_mask = None
-        self.step = 5
+        self.step = 1
 
-    def get_features(self, image, step=5):
+    def get_features(self, image):
         features_list = []
 
-        rows = range(image.shape[0] - 10 // step)
+        rows = range(image.shape[0] // self.step)
         for i in rows:
-            cols = range(image.shape[1] - 10 // step)
+            cols = range(image.shape[1] // self.step)
             for j in cols:
                 # part_img = image[5 * i:5 * (i + 1), 5 * j:5 * (j + 1)].flatten()
-                part_img = image[i * step: i * step + 5, j * step: j * step + 5].flatten()
-                # part_img = image[max(0, i * step - 2): i * step + 2, max(0, j * step - 2): j * step + 2].flatten()
+                # part_img = image[i * step: i * step + 5, j * step: j * step + 5].flatten()
+                part_img = image[max(0, i * self.step - 2): i * self.step + 3, max(0, j * self.step - 2): j * self.step + 3].flatten()
                 features = []
                 features.append(moment(part_img, moment=2))
                 features.append(moment(part_img, moment=3))
@@ -98,9 +98,9 @@ class AiDetector:
         self.image = img_as_float(cv2.imread(imgs[0], cv2.IMREAD_GRAYSCALE))
         self.expert_mask = img_as_float(cv2.imread(imgs[1], cv2.IMREAD_GRAYSCALE))
         print('\textract features...')
-        # x = self.get_features(self.image, self.step)
+        x = self.get_features(self.image, self.step)
         # self.cache_object(x, 'features.sav')
-        x = self.load_object('features.sav')
+        # x = self.load_object('features.sav')
         print('\tcomplete')
         # y = self.get_labels(expert_mask)
         # print('score', self.classifier.score(x, y))
@@ -114,20 +114,7 @@ class AiDetector:
         for i in rows:
             cols = range(predicted_image.shape[1] // self.step)
             for j in cols:
-                predicted_image[5 * i + 2, 5 * j + 2] = data[i * len(cols) + j]
-
-        io.imsave('predicted_image.jpg', predicted_image)
-
-    def predict_image2(self, img_name):
-        self.step = 1
-        print(f'predict_image {img_name}...')
-        data = self.predict(img_name)
-        predicted_image = np.zeros(self.image.shape)
-        rows = range(predicted_image.shape[0] - 10 // self.step)
-        for i in rows:
-            cols = range(predicted_image.shape[1] - 10 // self.step)
-            for j in cols:
-                predicted_image[i + 2, j + 2] = data[i * len(cols) + j]
+                predicted_image[i * self.step, j * self.step] = data[i * len(cols) + j]
 
         io.imsave('predicted_image.jpg', predicted_image)
 
