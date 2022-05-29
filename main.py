@@ -24,7 +24,7 @@ def ai():
 
     # detector.load_classifier()
     detector.create_classifier()
-    detector.predict_image('02_h_800')
+    detector.predict_image()
     print(start - datetime.now().timestamp())
 
 

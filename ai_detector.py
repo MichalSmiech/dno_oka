@@ -4,6 +4,7 @@ from skimage import img_as_float
 from sklearn.model_selection import cross_val_score, cross_val_predict, KFold
 from sklearn.tree import DecisionTreeClassifier
 import pickle
+from os.path import exists
 import numpy as np
 from skimage import io
 
@@ -14,23 +15,26 @@ class AiDetector:
         self.image = None
         self.expert_mask = None
         self.step = 1
-        self.original_img = None
-        self.work_img = None
-        self.manual = None
-        self.mask = None
+        self.image_path = None
+        self.manual_path = None
+        self.mask_path = None
         self.result_img = None
 
     def load(self, image_path, manual_path, mask_path):
-        self.original_img = io.imread(image_path)
-        self.work_img = self.original_img.copy()
-        self.manual = io.imread(manual_path, as_gray=True)
-        self.mask = io.imread(mask_path, as_gray=True)
+        self.image_path = image_path
+        self.manual_path = manual_path
+        self.mask_path = mask_path
 
     def run(self):
-        # TODO
-        self.result_img = self.work_img
+        if self.classifier is None:
+            self.load_classifier()
+        if self.classifier is None:
+            return
+        self.predict_image()
 
     def extract_features(self, image):
+        if exists(f'{self.image_path.split("/")[-1]}_features.sav'):
+            return self.load_object(f'{self.image_path.split("/")[-1]}_features.sav')
         print('extract_features...')
         features_list = []
 
@@ -48,6 +52,8 @@ class AiDetector:
                 features.append(moment(part_img, moment=4))
                 features.append(moment(part_img, moment=5))
                 features_list.append(features)
+
+        self.cache_object(features_list, f'{self.image_path.split("/")[-1]}_features.sav')
         return features_list
 
     def get_labels(self, image):
@@ -60,22 +66,28 @@ class AiDetector:
                 label.append(image[i * self.step, j * self.step])
         return label
 
-    def predict_image(self, img_name):
-        print(f'predict_image {img_name}...')
+    def predict_image(self):
+        print(f'predict_image...')
         self.step = 1
-        imgs = [f'data/images/{img_name}.jpg', f'data/manual/{img_name}.tif']
-        self.image = img_as_float(cv2.imread(imgs[0], cv2.IMREAD_GRAYSCALE))
-        self.expert_mask = img_as_float(cv2.imread(imgs[1], cv2.IMREAD_GRAYSCALE))
-        x = self.extract_features(self.image)
-        data = self.classifier.predict(x)
-        predicted_image = np.zeros(self.image.shape)
-        rows = range(predicted_image.shape[0] // self.step)
-        for i in rows:
-            cols = range(predicted_image.shape[1] // self.step)
-            for j in cols:
-                predicted_image[i * self.step, j * self.step] = data[i * len(cols) + j]
+        self.image = img_as_float(cv2.imread(self.image_path, cv2.IMREAD_GRAYSCALE))
+        features = self.extract_features(self.image)
+        data = self.classifier.predict(features)
+        self.result_img = data.reshape(self.image.shape)
+        self.masking()
+        # predicted_image = np.zeros(self.image.shape)
+        # rows = range(predicted_image.shape[0] // self.step)
+        # for i in rows:
+        #     cols = range(predicted_image.shape[1] // self.step)
+        #     for j in cols:
+        #         predicted_image[i * self.step, j * self.step] = data[i * len(cols) + j]
 
-        io.imsave('predicted_image.jpg', predicted_image)
+        # io.imsave('predicted_image.jpg', predicted_image)
+
+    def masking(self):
+        mask = img_as_float(cv2.imread(self.mask_path, cv2.IMREAD_GRAYSCALE))
+        for i in range(self.result_img.shape[0]):
+            for j in range(self.result_img.shape[1]):
+                self.result_img[i][j] = self.result_img[i][j] if mask[i][j] != 0 else 0.0
 
     def create_classifier(self):
         print('create_classifier...')
@@ -134,4 +146,7 @@ class AiDetector:
         pickle.dump(object, open(name, 'wb'))
 
     def load_object(self, name):
-        return pickle.load(open(name, 'rb'))
+        if exists(name):
+            return pickle.load(open(name, 'rb'))
+        else:
+            return None
