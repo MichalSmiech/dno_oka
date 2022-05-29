@@ -24,7 +24,8 @@ def main():
                     [sg.Text("Maska ekspercja")],
                     [sg.Image(key="-MANUAL_IMG-")],
                 ],
-            ),
+            )],
+        [
             sg.Column(
                 [
                     [sg.Text("Obraz wyjściowy")],
@@ -33,10 +34,11 @@ def main():
             ),
             sg.Column(
                 [
-                    [sg.Text("Maciez pomyłek")],
+                    [sg.Text("Macierz pomyłek")],
                     [sg.Image(key="-ERROR_IMG-")],
                 ],
-            )],
+            ),
+        ],
         [
             sg.Text("Image File"),
             sg.Input(size=(60, 1), key="-IMAGE_FILE-", default_text="data/images/02_h_800.jpg"),
@@ -75,7 +77,7 @@ def main():
             filename = values["-IMAGE_FILE-"]
             if os.path.exists(filename):
                 image = Image.open(filename)
-                image.thumbnail((600, 600))
+                image.thumbnail((500, 500))
                 bio = io.BytesIO()
                 image.save(bio, format="PNG")
                 window["-INPUT_IMG-"].update(data=bio.getvalue())
@@ -83,7 +85,7 @@ def main():
             filename = values["-MANUAL_FILE-"]
             if os.path.exists(filename):
                 image = Image.open(filename)
-                image.thumbnail((600, 600))
+                image.thumbnail((500, 500))
                 bio = io.BytesIO()
                 image.save(bio, format="PNG")
                 window["-MANUAL_IMG-"].update(data=bio.getvalue())
@@ -97,7 +99,7 @@ def main():
 
             myarray = numpy.array(detector.result_img) * 255
             image = Image.fromarray(numpy.uint8(myarray))
-            image.thumbnail((600, 600))
+            image.thumbnail((500, 500))
             bio = io.BytesIO()
             image.save(bio, format="PNG")
             window["-OUTPUT_IMG-"].update(data=bio.getvalue())
@@ -111,7 +113,7 @@ def main():
 
             skimage.io.imsave('error_img.jpg', error_img)
             image = Image.open('error_img.jpg')
-            image.thumbnail((600, 600))
+            image.thumbnail((500, 500))
             bio = io.BytesIO()
             image.save(bio, format="PNG")
             window["-ERROR_IMG-"].update(data=bio.getvalue())
@@ -126,7 +128,7 @@ def main():
 
             myarray = numpy.array(detector.result_img) * 255
             image = Image.fromarray(numpy.uint8(myarray))
-            image.thumbnail((600, 600))
+            image.thumbnail((500, 500))
             bio = io.BytesIO()
             image.save(bio, format="PNG")
             window["-OUTPUT_IMG-"].update(data=bio.getvalue())
@@ -140,7 +142,7 @@ def main():
 
             skimage.io.imsave('error_img.jpg', error_img)
             image = Image.open('error_img.jpg')
-            image.thumbnail((600, 600))
+            image.thumbnail((500, 500))
             bio = io.BytesIO()
             image.save(bio, format="PNG")
             window["-ERROR_IMG-"].update(data=bio.getvalue())

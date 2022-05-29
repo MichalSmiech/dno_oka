@@ -91,29 +91,13 @@ class AiDetector:
         print('extract_features...')
         if cache and exists(f'{image_path.split("/")[-1]}_features.sav'):
             return self.load_object(f'{image_path.split("/")[-1]}_features.sav')
-        print('extract_features...')
-        features_list = []
         features_list = extract_features1(image, self.step)
-
-        # rows = range(image.shape[0] // self.step)
-        # for i in rows:
-        #     print(f'extract_features {i}/{len(rows)} {i/len(rows)*100}%')
-        #     cols = range(image.shape[1] // self.step)
-        #     for j in cols:
-        #         part_img = image[max(0, i * self.step - 2): i * self.step + 3, max(0, j * self.step - 2): j * self.step + 3].flatten()
-        #         features = []
-        #         features.extend(self.hu_moments(part_img))
-        #         features.extend(part_img)
-        #         if len(part_img) < 25:
-        #             features.extend([0] * (25 - len(part_img)))
-        #         features_list.append(features)
         if cache:
             self.cache_object(features_list, f'{image_path.split("/")[-1]}_features.sav')
         return features_list
 
     def get_labels(self, image):
         label = []
-
         rows = range(image.shape[0] // self.step)
         for i in rows:
             cols = range(image.shape[1] // self.step)
@@ -126,7 +110,6 @@ class AiDetector:
         self.step = 1
         self.image = img_as_float(cv2.imread(self.image_path,)[:, :, 1])
         self.image = self.preprocess_image(self.image)
-        io.imsave('test2.jpg', self.image)
         features = self.extract_features(self.image, cache=False, image_path=self.image_path)
         data = self.classifier.predict(features)
         self.result_img = data.reshape(self.image.shape)
@@ -186,26 +169,18 @@ class AiDetector:
     def create_classifier(self):
         print('create_classifier...')
         self.step = 5
-        one = ['data/images/01_h.jpg', 'data/manual/01_h.tif']
-        two = ['data/images/02_h.jpg', 'data/manual/02_h.tif']
-        three = ['data/images/03_h.jpg', 'data/manual/03_h.tif']
-        four = ['data/images/04_h.jpg', 'data/manual/04_h.tif']
-        five = ['data/images/05_h.jpg', 'data/manual/05_h.tif']
-        test1 = ['data/images/02_h_800.jpg', 'data/manual/02_h_800.tif']
-        test2 = ['data/images/02_h_800.jpg', 'data/manual/02_h_800.tif']
+        list_img = ['data/images/01_h.jpg', 'data/manual/01_h.tif']
+        list_img1 = ['data/images/03_h.jpg', 'data/manual/03_h.tif']
+        list_img2 = ['data/images/04_h.jpg', 'data/manual/04_h.tif']
 
         x = []
         y = []
-        for i in [one]:
+        for i in [list_img, list_img1, list_img2]:
             print(str(i))
 
             image = img_as_float(cv2.imread(i[0])[:,:,1])
             image = self.preprocess_image(image)
-            # image = img_as_float(cv2.imread(i[0], cv2.IMREAD_GRAYSCALE))
             expert_mask = img_as_float(cv2.imread(i[1], cv2.IMREAD_GRAYSCALE))
-            # feature_list = self.load_object(f'{i[0].split("/")[-1]}_features.sav')
-            # for features in feature_list:
-            #     x += features
             x += self.extract_features(image, cache=False, image_path=i[0])
             y += self.get_labels(expert_mask)
 
@@ -227,9 +202,7 @@ class AiDetector:
 
         self.classifier = DecisionTreeClassifier(criterion="entropy")
         self.classifier = self.classifier.fit(x_train, y_train)
-        predictions = cross_val_predict(self.classifier, x, y, cv=6)
 
-        print("predictions:", predictions)
         print("score ", self.classifier.score(x_test, y_test))
         print('completed')
 
