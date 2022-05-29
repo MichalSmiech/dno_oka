@@ -80,7 +80,19 @@ def main():
             image.save(bio, format="PNG")
             window["-OUTPUT_IMG-"].update(data=bio.getvalue())
         if event == "AI klasyfikator":
-            pass
+            image_file_path = values["-IMAGE_FILE-"]
+            manual_file_path = values["-MANUAL_FILE-"]
+            mask_file_path = values["-MASK_FILE-"]
+            detector = AiDetector()
+            detector.load(image_file_path, manual_file_path, mask_file_path)
+            detector.run()
+
+            myarray = numpy.array(detector.result_img) * 255
+            image = Image.fromarray(numpy.uint8(myarray))
+            image.thumbnail((400, 400))
+            bio = io.BytesIO()
+            image.save(bio, format="PNG")
+            window["-OUTPUT_IMG-"].update(data=bio.getvalue())
 
 
 if __name__ == "__main__":
