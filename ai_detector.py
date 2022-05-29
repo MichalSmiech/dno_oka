@@ -32,8 +32,8 @@ class AiDetector:
             return
         self.predict_image()
 
-    def extract_features(self, image):
-        if exists(f'{self.image_path.split("/")[-1]}_features.sav'):
+    def extract_features(self, image, cache=False):
+        if cache and exists(f'{self.image_path.split("/")[-1]}_features.sav'):
             return self.load_object(f'{self.image_path.split("/")[-1]}_features.sav')
         print('extract_features...')
         features_list = []
@@ -43,8 +43,6 @@ class AiDetector:
             print(f'extract_features {i}/{len(rows)} {i/len(rows)*100}%')
             cols = range(image.shape[1] // self.step)
             for j in cols:
-                # part_img = image[5 * i:5 * (i + 1), 5 * j:5 * (j + 1)].flatten()
-                # part_img = image[i * step: i * step + 5, j * step: j * step + 5].flatten()
                 part_img = image[max(0, i * self.step - 2): i * self.step + 3, max(0, j * self.step - 2): j * self.step + 3].flatten()
                 features = []
                 features.append(moment(part_img, moment=2))
@@ -52,8 +50,8 @@ class AiDetector:
                 features.append(moment(part_img, moment=4))
                 features.append(moment(part_img, moment=5))
                 features_list.append(features)
-
-        self.cache_object(features_list, f'{self.image_path.split("/")[-1]}_features.sav')
+        if cache:
+            self.cache_object(features_list, f'{self.image_path.split("/")[-1]}_features.sav')
         return features_list
 
     def get_labels(self, image):
@@ -70,18 +68,10 @@ class AiDetector:
         print(f'predict_image...')
         self.step = 1
         self.image = img_as_float(cv2.imread(self.image_path, cv2.IMREAD_GRAYSCALE))
-        features = self.extract_features(self.image)
+        features = self.extract_features(self.image, cache=True)
         data = self.classifier.predict(features)
         self.result_img = data.reshape(self.image.shape)
         self.masking()
-        # predicted_image = np.zeros(self.image.shape)
-        # rows = range(predicted_image.shape[0] // self.step)
-        # for i in rows:
-        #     cols = range(predicted_image.shape[1] // self.step)
-        #     for j in cols:
-        #         predicted_image[i * self.step, j * self.step] = data[i * len(cols) + j]
-
-        # io.imsave('predicted_image.jpg', predicted_image)
 
     def masking(self):
         mask = img_as_float(cv2.imread(self.mask_path, cv2.IMREAD_GRAYSCALE))
