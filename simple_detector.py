@@ -14,6 +14,7 @@ class SimpleDetector:
         self.manual = None
         self.mask = None
         self.work_img = None
+        self.result_img = None
 
     def load(self, image_path, manual_path, mask_path):
         self.original_img = io.imread(image_path)
@@ -106,6 +107,10 @@ class SimpleDetector:
         #
         # plt.tight_layout()
         # plt.show()
+
+    def run(self):
+        self.filter()
+        self.result_img = self.work_img
 
     def compare_with_manual(self):
         white = 0

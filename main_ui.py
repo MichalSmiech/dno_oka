@@ -4,9 +4,10 @@ import numpy
 import PySimpleGUI as sg
 from PIL import Image
 from datetime import datetime
+from simple_detector import SimpleDetector
+from ai_detector import AiDetector
 
-file_types = [("JPEG (*.jpg)", "*.jpg"),
-              ("All files (*.*)", "*.*")]
+file_types = [("All files (*.*)", "*.*")]
 
 def main():
     layout = [
@@ -24,9 +25,19 @@ def main():
             )],
         [
             sg.Text("Image File"),
-            sg.Input(size=(60, 1), key="-IMAGE_FILE-"),
+            sg.Input(size=(60, 1), key="-IMAGE_FILE-", default_text="data/images/01_h.jpg"),
             sg.FileBrowse(file_types=file_types),
             sg.Button("Load Image"),
+        ],
+        [
+            sg.Text("Manual File"),
+            sg.Input(size=(60, 1), key="-MANUAL_FILE-", default_text="data/manual/01_h.tif"),
+            sg.FileBrowse(file_types=file_types),
+        ],
+        [
+            sg.Text("Mask File"),
+            sg.Input(size=(60, 1), key="-MASK_FILE-", default_text="data/mask/01_h_mask.tif"),
+            sg.FileBrowse(file_types=file_types),
         ],
         [
             sg.Button("Prosty klasyfikator"),
@@ -55,7 +66,19 @@ def main():
                 window["-INPUT_IMG-"].update(data=bio.getvalue())
                 window["-DATA-"].update('bio.getvalue()')
         if event == "Prosty klasyfikator":
-            pass
+            image_file_path = values["-IMAGE_FILE-"]
+            manual_file_path = values["-MANUAL_FILE-"]
+            mask_file_path = values["-MASK_FILE-"]
+            detector = SimpleDetector()
+            detector.load(image_file_path, manual_file_path, mask_file_path)
+            detector.run()
+
+            myarray = numpy.array(detector.result_img) * 255
+            image = Image.fromarray(numpy.uint8(myarray))
+            image.thumbnail((400, 400))
+            bio = io.BytesIO()
+            image.save(bio, format="PNG")
+            window["-OUTPUT_IMG-"].update(data=bio.getvalue())
         if event == "AI klasyfikator":
             pass
 
