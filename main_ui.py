@@ -33,7 +33,7 @@ def main():
             ),
             sg.Column(
                 [
-                    [sg.Text("Obraz pomyłek")],
+                    [sg.Text("Maciez pomyłek")],
                     [sg.Image(key="-ERROR_IMG-")],
                 ],
             )],
@@ -75,7 +75,7 @@ def main():
             filename = values["-IMAGE_FILE-"]
             if os.path.exists(filename):
                 image = Image.open(filename)
-                image.thumbnail((400, 400))
+                image.thumbnail((600, 600))
                 bio = io.BytesIO()
                 image.save(bio, format="PNG")
                 window["-INPUT_IMG-"].update(data=bio.getvalue())
@@ -83,7 +83,7 @@ def main():
             filename = values["-MANUAL_FILE-"]
             if os.path.exists(filename):
                 image = Image.open(filename)
-                image.thumbnail((400, 400))
+                image.thumbnail((600, 600))
                 bio = io.BytesIO()
                 image.save(bio, format="PNG")
                 window["-MANUAL_IMG-"].update(data=bio.getvalue())
@@ -97,7 +97,7 @@ def main():
 
             myarray = numpy.array(detector.result_img) * 255
             image = Image.fromarray(numpy.uint8(myarray))
-            image.thumbnail((400, 400))
+            image.thumbnail((600, 600))
             bio = io.BytesIO()
             image.save(bio, format="PNG")
             window["-OUTPUT_IMG-"].update(data=bio.getvalue())
@@ -109,12 +109,12 @@ def main():
             stats += f'\nśrednia arytmetyczna czułości i swoistości (TP): {avg}'
             window["-DATA-"].update(stats)
 
-            # image = Image.fromarray(error_img, 'RGB')
-            # # skimage.io.imsave('testrttt.jpg', error_img)
-            # # image.thumbnail((400, 400))
-            # bio = io.BytesIO()
-            # image.save(bio, format="PNG")
-            # window["-ERROR_IMG-"].update(data=bio.getvalue())
+            skimage.io.imsave('error_img.jpg', error_img)
+            image = Image.open('error_img.jpg')
+            image.thumbnail((600, 600))
+            bio = io.BytesIO()
+            image.save(bio, format="PNG")
+            window["-ERROR_IMG-"].update(data=bio.getvalue())
 
         if event == "AI klasyfikator":
             image_file_path = values["-IMAGE_FILE-"]
@@ -126,7 +126,7 @@ def main():
 
             myarray = numpy.array(detector.result_img) * 255
             image = Image.fromarray(numpy.uint8(myarray))
-            image.thumbnail((400, 400))
+            image.thumbnail((600, 600))
             bio = io.BytesIO()
             image.save(bio, format="PNG")
             window["-OUTPUT_IMG-"].update(data=bio.getvalue())
@@ -138,12 +138,12 @@ def main():
             stats += f'\nśrednia arytmetyczna czułości i swoistości (TP): {avg}'
             window["-DATA-"].update(stats)
 
-            # image = Image.fromarray(error_img, 'RGB')
-            # # skimage.io.imsave('testrttt.jpg', error_img)
-            # # image.thumbnail((400, 400))
-            # bio = io.BytesIO()
-            # image.save(bio, format="PNG")
-            # window["-ERROR_IMG-"].update(data=bio.getvalue())
+            skimage.io.imsave('error_img.jpg', error_img)
+            image = Image.open('error_img.jpg')
+            image.thumbnail((600, 600))
+            bio = io.BytesIO()
+            image.save(bio, format="PNG")
+            window["-ERROR_IMG-"].update(data=bio.getvalue())
 
 
 if __name__ == "__main__":

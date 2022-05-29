@@ -24,10 +24,15 @@ def ai():
 
     # detector.load_classifier()
     detector.create_classifier()
-    detector.predict_image()
-    print(start - datetime.now().timestamp())
+    detector.save_classifier()
+    import winsound
+    frequency = 2500  # Set Frequency To 2500 Hertz
+    duration = 10000  # Set Duration To 1000 ms == 1 second
+    winsound.Beep(frequency, duration)
+    # detector.predict_image()
+    # print(start - datetime.now().timestamp())
 
 
 
-
-ai()
+if __name__ == '__main__':
+    ai()
