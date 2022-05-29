@@ -32,6 +32,46 @@ class AiDetector:
             return
         self.predict_image()
 
+    def stats(self):
+        manual = img_as_float(cv2.imread(self.manual_path, cv2.IMREAD_GRAYSCALE))
+        mask = img_as_float(cv2.imread(self.mask_path, cv2.IMREAD_GRAYSCALE))
+        tp = 0
+        fp = 0
+        fn = 0
+        tn = 0
+        error_img = []
+        for i in range(self.result_img.shape[0]):
+            row = []
+            for j in range(self.result_img.shape[1]):
+                manual_value = manual[i][j]
+                mask_value = mask[i][j]
+                img_value = self.result_img[i][j]
+                if mask_value == 1:
+                    if manual_value == 1:
+                        if img_value == 1:
+                            tp += 1
+                            row.append((0, 255, 0))
+                        else:
+                            fn += 1
+                            row.append((0, 0, 255))
+                    else:
+                        if img_value == 1:
+                            fp += 1
+                            row.append((255, 0, 0))
+                        else:
+                            tn += 1
+                            row.append((0, 0, 0))
+            error_img.append(row)
+        # Trwałość
+        ppv = (tp + tn) / (tn + fn + tp + fp)
+        # Czułość
+        tpr = tp / (tp + fn)
+        # Swoistość
+        spc = tn / (fp + tn)
+        # Średnia
+        avg = (spc + tpr) / 2
+        return ppv, tpr, spc, avg, np.array(error_img)
+
     def extract_features(self, image, cache=False):
         if cache and exists(f'{self.image_path.split("/")[-1]}_features.sav'):
             return self.load_object(f'{self.image_path.split("/")[-1]}_features.sav')

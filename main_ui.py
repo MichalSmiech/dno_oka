@@ -131,6 +131,20 @@ def main():
             image.save(bio, format="PNG")
             window["-OUTPUT_IMG-"].update(data=bio.getvalue())
 
+            ppv, tpr, spc, avg, error_img = detector.stats()
+            stats = f'trafność (FP): {ppv}'
+            stats += f'\nczułość (FN): {tpr}'
+            stats += f'\nswoistość (TN): {spc}'
+            stats += f'\nśrednia arytmetyczna czułości i swoistości (TP): {avg}'
+            window["-DATA-"].update(stats)
+
+            # image = Image.fromarray(error_img, 'RGB')
+            # # skimage.io.imsave('testrttt.jpg', error_img)
+            # # image.thumbnail((400, 400))
+            # bio = io.BytesIO()
+            # image.save(bio, format="PNG")
+            # window["-ERROR_IMG-"].update(data=bio.getvalue())
+
 
 if __name__ == "__main__":
     main()
