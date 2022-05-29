@@ -14,10 +14,16 @@ def main():
     layout = [
         [
             sg.Column(
-            [
-                [sg.Text("Obraz wejściowy")],
-                [sg.Image(key="-INPUT_IMG-")],
-            ],
+                [
+                    [sg.Text("Obraz wejściowy")],
+                    [sg.Image(key="-INPUT_IMG-")],
+                ],
+            ),
+            sg.Column(
+                [
+                    [sg.Text("Maska ekspercja")],
+                    [sg.Image(key="-MANUAL_IMG-")],
+                ],
             ),
             sg.Column(
                 [
@@ -41,6 +47,7 @@ def main():
             sg.Text("Manual File"),
             sg.Input(size=(60, 1), key="-MANUAL_FILE-", default_text="data/manual/02_h_800.tif"),
             sg.FileBrowse(file_types=file_types),
+            sg.Button("Load Manual"),
         ],
         [
             sg.Text("Mask File"),
@@ -72,6 +79,14 @@ def main():
                 bio = io.BytesIO()
                 image.save(bio, format="PNG")
                 window["-INPUT_IMG-"].update(data=bio.getvalue())
+        if event == "Load Manual":
+            filename = values["-MANUAL_FILE-"]
+            if os.path.exists(filename):
+                image = Image.open(filename)
+                image.thumbnail((400, 400))
+                bio = io.BytesIO()
+                image.save(bio, format="PNG")
+                window["-MANUAL_IMG-"].update(data=bio.getvalue())
         if event == "Prosty klasyfikator":
             image_file_path = values["-IMAGE_FILE-"]
             manual_file_path = values["-MANUAL_FILE-"]
