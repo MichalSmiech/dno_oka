@@ -14,6 +14,21 @@ class AiDetector:
         self.image = None
         self.expert_mask = None
         self.step = 1
+        self.original_img = None
+        self.work_img = None
+        self.manual = None
+        self.mask = None
+        self.result_img = None
+
+    def load(self, image_path, manual_path, mask_path):
+        self.original_img = io.imread(image_path)
+        self.work_img = self.original_img.copy()
+        self.manual = io.imread(manual_path, as_gray=True)
+        self.mask = io.imread(mask_path, as_gray=True)
+
+    def run(self):
+        # TODO
+        self.result_img = self.work_img
 
     def extract_features(self, image):
         print('extract_features...')
