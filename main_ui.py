@@ -2,6 +2,7 @@ import io
 import os
 import numpy
 import PySimpleGUI as sg
+import skimage
 from PIL import Image
 from datetime import datetime
 from simple_detector import SimpleDetector
@@ -11,32 +12,39 @@ file_types = [("All files (*.*)", "*.*")]
 
 def main():
     layout = [
-        [sg.Column(
+        [
+            sg.Column(
             [
                 [sg.Text("Obraz wejściowy")],
                 [sg.Image(key="-INPUT_IMG-")],
             ],
-        ),
+            ),
             sg.Column(
                 [
                     [sg.Text("Obraz wyjściowy")],
                     [sg.Image(key="-OUTPUT_IMG-")],
                 ],
+            ),
+            sg.Column(
+                [
+                    [sg.Text("Obraz pomyłek")],
+                    [sg.Image(key="-ERROR_IMG-")],
+                ],
             )],
         [
             sg.Text("Image File"),
-            sg.Input(size=(60, 1), key="-IMAGE_FILE-", default_text="data/images/01_h.jpg"),
+            sg.Input(size=(60, 1), key="-IMAGE_FILE-", default_text="data/images/02_h_800.jpg"),
             sg.FileBrowse(file_types=file_types),
             sg.Button("Load Image"),
         ],
         [
             sg.Text("Manual File"),
-            sg.Input(size=(60, 1), key="-MANUAL_FILE-", default_text="data/manual/01_h.tif"),
+            sg.Input(size=(60, 1), key="-MANUAL_FILE-", default_text="data/manual/02_h_800.tif"),
             sg.FileBrowse(file_types=file_types),
         ],
         [
             sg.Text("Mask File"),
-            sg.Input(size=(60, 1), key="-MASK_FILE-", default_text="data/mask/01_h_mask.tif"),
+            sg.Input(size=(60, 1), key="-MASK_FILE-", default_text="data/mask/02_h_mask_800.tif"),
             sg.FileBrowse(file_types=file_types),
         ],
         [
@@ -64,7 +72,6 @@ def main():
                 bio = io.BytesIO()
                 image.save(bio, format="PNG")
                 window["-INPUT_IMG-"].update(data=bio.getvalue())
-                window["-DATA-"].update('bio.getvalue()')
         if event == "Prosty klasyfikator":
             image_file_path = values["-IMAGE_FILE-"]
             manual_file_path = values["-MANUAL_FILE-"]
@@ -79,6 +86,21 @@ def main():
             bio = io.BytesIO()
             image.save(bio, format="PNG")
             window["-OUTPUT_IMG-"].update(data=bio.getvalue())
+
+            ppv, tpr, spc, avg, error_img = detector.stats()
+            stats = f'trafność (FP): {ppv}'
+            stats += f'\nczułość (FN): {tpr}'
+            stats += f'\nswoistość (TN): {spc}'
+            stats += f'\nśrednia arytmetyczna czułości i swoistości (TP): {avg}'
+            window["-DATA-"].update(stats)
+
+            # image = Image.fromarray(error_img, 'RGB')
+            # # skimage.io.imsave('testrttt.jpg', error_img)
+            # # image.thumbnail((400, 400))
+            # bio = io.BytesIO()
+            # image.save(bio, format="PNG")
+            # window["-ERROR_IMG-"].update(data=bio.getvalue())
+
         if event == "AI klasyfikator":
             image_file_path = values["-IMAGE_FILE-"]
             manual_file_path = values["-MANUAL_FILE-"]

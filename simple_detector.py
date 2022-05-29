@@ -20,14 +20,54 @@ class SimpleDetector:
         self.original_img = io.imread(image_path)
         self.work_img = self.original_img.copy()
         self.manual = io.imread(manual_path, as_gray=True)
+        if self.manual.max() == 255:
+            self.manual = np.array(self.manual) / 255
         self.mask = io.imread(mask_path, as_gray=True)
+
+    def stats(self):
+        tp = 0
+        fp = 0
+        fn = 0
+        tn = 0
+        error_img = []
+        for i in range(self.result_img.shape[0]):
+            row = []
+            for j in range(self.result_img.shape[1]):
+                manual = self.manual[i][j]
+                mask = self.mask[i][j]
+                img = self.work_img[i][j]
+                if mask == 1:
+                    if manual == 1:
+                        if img == 1:
+                            tp += 1
+                            row.append((0, 255, 0))
+                        else:
+                            fn += 1
+                            row.append((0, 0, 255))
+                    else:
+                        if img == 1:
+                            fp += 1
+                            row.append((255, 0, 0))
+                        else:
+                            tn += 1
+                            row.append((0, 0, 0))
+            error_img.append(row)
+        # Trwałość
+        ppv = (tp + tn) / (tn + fn + tp + fp)
+        # Czułość
+        tpr = tp / (tp + fn)
+        # Swoistość
+        spc = tn / (fp + tn)
+        # Średnia
+        avg = (spc + tpr) / 2
+        return ppv, tpr, spc, avg, np.array(error_img)
 
     def pre_processing(self):
         self.work_img = self.work_img[:,:,1]
         self.work_img = equalize_adapthist(self.work_img)
         self.work_img = img_as_ubyte(self.work_img)
         self.work_img = median(self.work_img)
-        io.imsave('test.jpg', self.work_img)
+        # io.imsave('test.jpg', self.work_img)
 
     def segmentation(self):
         self.work_img = frangi(self.work_img)
@@ -83,7 +123,7 @@ class SimpleDetector:
         self.segmentation()
         self.threshold()
         self.masking()
-        io.imsave('test1.jpg', self.work_img)
+        # io.imsave('test1.jpg', self.work_img)
 
         # io.imsave('test.jpg', self.work_img)
 
@@ -123,7 +163,7 @@ class SimpleDetector:
                 mask = self.mask[i][j]
                 img = self.work_img[i][j]
                 if mask == 1:
-                    if manual == 255:
+                    if manual == 1:
                         black_count += 1
                         if img == 1:
                             black += 1
